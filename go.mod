@@ -1,4 +1,4 @@
-module ulist-backend
+module github.com/supercip971/ulist-backend
 
 go 1.20
 
