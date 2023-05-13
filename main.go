@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/models"
@@ -78,6 +80,10 @@ func db_list_update(app *pocketbase.PocketBase, req db.PostShoppingList, userId 
 
 func main() {
 	app := pocketbase.New()
+
+	migratecmd.MustRegister(app, app.RootCmd, &migratecmd.Options{
+		Automigrate: true, // auto creates migration files when making collection changes
+	})
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.AddRoute(echo.Route{
 			Method: http.MethodGet,
@@ -97,6 +103,8 @@ func main() {
 			Method: http.MethodGet,
 			Path:   "/api/v1/list-entries",
 			Handler: func(c echo.Context) error {
+				// sleep
+				time.Sleep(300 * time.Millisecond)
 				l, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 
 				if l == nil {
