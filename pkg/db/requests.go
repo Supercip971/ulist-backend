@@ -22,6 +22,11 @@ type UserListEntry struct {
 	UserId  string `db:"userId" json:"userId"`
 	Owner   bool   `db:"owner" json:"owner"`
 }
+
+type CreateShoppingList struct {
+	Name string `json:"name"`
+}
+
 type UserLists struct {
 	Lists []UserListEntry `json:"lists"`
 	Count int             `json:"count"`

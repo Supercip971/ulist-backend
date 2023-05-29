@@ -16,6 +16,8 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/supercip971/ulist-backend/pkg/db"
+
+	_ "github.com/supercip971/ulist-backend/migrations"
 )
 
 // ensures that the List struct satisfy the models.Model interface
@@ -27,6 +29,38 @@ func do_user_has_right(app *pocketbase.PocketBase, userId string, listId string)
 	err := query.AndWhere(dbx.HashExp{"userOwnership": userId, "list": listId}).All(&result)
 
 	return err == nil && len(result) > 0
+}
+
+func db_list_create(app *pocketbase.PocketBase, req db.CreateShoppingList, userId string) error {
+
+	record := &db.ShopList{
+		Name:              req.Name,
+		ReadonlyByDefault: false,
+	}
+
+	record.MarkAsNew()
+	err := app.Dao().Save(record)
+
+	if err != nil {
+		return err
+	}
+
+	println("record id: " + record.Id)
+	visibility := &db.ListVisibility{
+		List:          record.Id,
+		UserOwnership: userId,
+		Owner:         true,
+		Readonly:      false,
+	}
+
+	visibility.MarkAsNew()
+	err = app.Dao().Save(visibility)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func db_list_update(app *pocketbase.PocketBase, req db.PostShoppingList, userId string) error {
@@ -219,6 +253,39 @@ func main() {
 			},
 		})
 
+		// List Create API
+		e.Router.AddRoute(echo.Route{
+			Method: http.MethodPost,
+			Path:   "/api/v1/list",
+			Handler: func(c echo.Context) error {
+				l, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+
+				if l == nil {
+					return c.JSON(http.StatusForbidden, "{\"error\":\"forbidden, only connected user has the right to use this api\"}")
+				}
+
+				params := db.CreateShoppingList{}
+
+				err1 := c.Bind(&params)
+
+				if err1 != nil {
+					return c.JSON(http.StatusBadRequest, "{\"error\":\"unable to create list\"}")
+				}
+				err := db_list_create(app, params, l.GetId())
+
+				if err != nil {
+
+					return c.JSON(http.StatusForbidden, "{\"error\":\"there was an issue creating this list\"}")
+				}
+
+				return c.JSON(http.StatusOK, "{}")
+
+			},
+			Middlewares: []echo.MiddlewareFunc{
+				apis.ActivityLogger(app),
+				apis.RequireRecordAuth(),
+			},
+		})
 		// List information API
 		e.Router.AddRoute(echo.Route{
 			Method: http.MethodGet,
