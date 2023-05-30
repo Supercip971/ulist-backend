@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 type ListVisibility struct {
@@ -47,4 +48,19 @@ var _ models.Model = (*DbShopListEntries)(nil)
 
 func (m *DbShopListEntries) TableName() string {
 	return "list_entries" // the name of your collection
+}
+
+type ListShare struct {
+	models.BaseModel
+
+	List           string         `db:"list" json:"list"`
+	SharedBy       string         `db:"sharedBy" json:"sharedBy"`
+	ExpirationDate types.DateTime `db:"expirationDate" json:"expirationDate"`
+	Identifier     string         `db:"identificator" json:"identificator"`
+}
+
+var _ models.Model = (*ListShare)(nil)
+
+func (m *ListShare) TableName() string {
+	return "list_shares" // the name of your collection
 }
