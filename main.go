@@ -306,19 +306,24 @@ func main() {
 				invite_id := c.PathParam("id")
 
 				if invite_id == "" {
-					return c.JSON(http.StatusForbidden, "{\"error\":\"Please enter a valid 'id'\"}")
+
+					return echo.NewHTTPError(http.StatusBadRequest, "Please enter a valid 'id'")
+					//	return c.JSON(http.StatusBadRequest, "{\"error\":\"Please enter a valid 'id'\"}")
 				}
 
 				l, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 
 				if l == nil {
-					return c.JSON(http.StatusForbidden, "{\"error\":\"forbidden, only connected user has the right to use this api\"}")
+					return echo.NewHTTPError(http.StatusForbidden, "Forbidden, only connected user has the right to use this api")
+
+					return c.JSON(http.StatusBadRequest, "{\"error\":\"forbidden, only connected user has the right to use this api\"}")
 				}
 
 				userId := l.GetId()
 
 				if userAntispamCheck(userId) {
-					return c.JSON(http.StatusForbidden, "{\"error\":\"You are trying to join too many lists at the same time, please wait 5-10 seconds.\"}")
+					return echo.NewHTTPError(http.StatusTooManyRequests, "You are trying to join too many lists at the same time, please wait 5-10 seconds.")
+
 				}
 
 				//	if !do_user_has_right(app, userId, id) {
@@ -331,13 +336,14 @@ func main() {
 				//	err := query.AndWhere(dbx.HashExp{"userOwnership": userId}).All(&result)
 
 				if err != nil {
+					return echo.NewHTTPError(http.StatusBadRequest, "Invalid invite id, maybe the invitation has expired or the 'id' is invalid.")
 
-					return c.JSON(http.StatusForbidden, "{\"error\":\"Invalid invite id, maybe the invitation has expired or the 'id' is invalid.\"}")
 				}
 
 				if !result.ExpirationDate.IsZero() {
 					if result.ExpirationDate.Time().Sub(time.Now()) < 0 {
-						return c.JSON(http.StatusForbidden, "{\"error\":\"The invitation has expired.\"}")
+						return echo.NewHTTPError(http.StatusBadRequest, "The invitation has expired.")
+
 					}
 				}
 
