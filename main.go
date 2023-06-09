@@ -321,7 +321,7 @@ func main() {
 
 				userId := l.GetId()
 
-				if userAntispamCheck(userId) {
+				if !userAntispamCheck(userId) {
 					return echo.NewHTTPError(http.StatusTooManyRequests, "You are trying to join too many lists at the same time, please wait 5-10 seconds.")
 
 				}
@@ -378,7 +378,7 @@ func main() {
 				l, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 
 				if l == nil {
-					return c.JSON(http.StatusForbidden, "{\"error\":\"forbidden, only connected user has the right to use this api\"}")
+					return echo.NewHTTPError(http.StatusForbidden, "{\"error\":\"forbidden, only connected user has the right to use this api\"}")
 				}
 
 				params := db.ListShare{}
@@ -386,19 +386,21 @@ func main() {
 				err1 := c.Bind(&params)
 
 				if err1 != nil {
-					return c.JSON(http.StatusBadRequest, "{\"error\":\"unable to create invitation\"}")
+					return echo.NewHTTPError(http.StatusBadRequest, "{\"error\":\"unable to create invitation\"}")
 				}
 
 				if params.ExpirationDate.IsZero() || params.ExpirationDate.Time().Sub(time.Now().Add(time.Hour*24*7)) < 0 {
 
 					params.ExpirationDate, _ = types.ParseDateTime(time.Now().Add(time.Hour * 24 * 7).UTC().Format(types.DefaultDateLayout))
 				}
+				params.SharedBy = l.GetId()
 				params.MarkAsNew()
 				err := app.Dao().Save(&params)
 
+				params.Identifier = params.Id
 				if err != nil {
 
-					return c.JSON(http.StatusForbidden, "{\"error\":\"there was an issue creating this invitation\"}")
+					return echo.NewHTTPError(http.StatusForbidden, "{\"error\":\"there was an issue creating this invitation\"}")
 				}
 
 				return c.JSON(http.StatusOK, params.Id)
