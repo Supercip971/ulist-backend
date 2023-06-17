@@ -30,10 +30,14 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/supercip971/ulist-backend/pkg/urequests"
 
+
 	_ "github.com/supercip971/ulist-backend/migrations"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	godotenv.Load()
 	app := pocketbase.New()
 
 	migratecmd.MustRegister(app, app.RootCmd, &migratecmd.Options{
