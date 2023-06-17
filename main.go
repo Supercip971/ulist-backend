@@ -37,7 +37,13 @@ import (
 )
 
 func main() {
+
+
+
 	godotenv.Load()
+
+	urequests.StripeInit()
+
 	app := pocketbase.New()
 
 	migratecmd.MustRegister(app, app.RootCmd, &migratecmd.Options{
@@ -79,6 +85,9 @@ func main() {
 		// api/v1/get-lists
 		urequests.AddListQueriesRoutes(e, app)
 		// Getting user lists API
+
+		// api/v1/subscription
+		urequests.AddListStripeRoutes(e, app)
 
 		return nil
 	})
