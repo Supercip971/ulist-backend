@@ -34,6 +34,7 @@ import (
 	"github.com/stripe/stripe-go/sub"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/customer"
+	"database/sql"
 )
 
 
@@ -46,21 +47,25 @@ const (
 
 var StripeEnabled = false
 var StripeSubscriptionKey = ""
-func EnsureDbStripeUser(app *pocketbase.PocketBase,  user *models.Record) error {
+func EnsureDbStripeUser(app *pocketbase.PocketBase,  user *models.Record) (res error, val db.UserSubscriptionInformation) {
 	
-	previous := []db.UserSubscriptionInformation{}
+	previous := db.UserSubscriptionInformation{}
 
 	query := app.Dao().ModelQuery(&db.UserSubscriptionInformation{})
 
-	err := query.AndWhere(dbx.HashExp{"user": user.GetId()}).All(&previous)
+	err := query.AndWhere(dbx.HashExp{"user": user.GetId()}).One(&previous)
+	
 
-
-	if(len(previous) > 0) {
-		return nil
-	}
 	if err != nil {
-		return err
+		res = nil 
+		val = previous 
+		return 
 	}
+
+	if err != sql.ErrNoRows { 
+		res = err
+		return 
+	}	
 	
 
 	params := &stripe.CustomerParams{
@@ -72,7 +77,7 @@ func EnsureDbStripeUser(app *pocketbase.PocketBase,  user *models.Record) error 
 	c, err1 := customer.New(params)
 
 	if(err1 != nil) {
-		return err1
+		res = err1
 	}
 
 	print("loaded user stripe information: ", c.ID)
@@ -87,12 +92,14 @@ func EnsureDbStripeUser(app *pocketbase.PocketBase,  user *models.Record) error 
 
 
 	if(err2 != nil) {
-		return err2
+		res = err2
+		return 
 	}
 
-	return nil
+	res = nil 
+	val = sub_info
 
-
+	return 
 }
 
 
