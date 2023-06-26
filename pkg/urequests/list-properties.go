@@ -38,38 +38,77 @@ func AddListPropertiesRoutes(e *core.ServeEvent, app *pocketbase.PocketBase) {
 			l, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 
 			if l == nil {
-				return c.JSON(http.StatusForbidden, "{\"error\":\"forbidden, only connected user has the right to use this api\"}")
+				return c.JSON(
+					http.StatusForbidden,
+					"{\"error\":\"forbidden, only connected user has the right to use this api\"}",
+				)
 			}
 
 			userId := l.GetId()
 
+			if !c.QueryParams().Has("id") {
+				return c.JSON(http.StatusForbidden, "{\"error\":\"Please enter a valid 'id'\"}")
+			}
+			id := c.QueryParams().Get("id")
+
+			if !DoUserHasRights(app, userId, id) {
+				return c.JSON(http.StatusForbidden, "{\"error\":\"forbidden, user doesn't have the right to use this list \"}")
+			}
+			returned := db.ShoppingListProperties{
+				Users:  []db.GetUserInList{},
+				Shares: []db.GetListShare{},
+			}
+
+			/* users in list */
+
 			query := app.Dao().ModelQuery(&db.ListVisibility{})
-
-			result := []*db.ListVisibility{}
-			err := query.AndWhere(dbx.HashExp{"userOwnership": userId}).All(&result)
-
+			users := []*db.ListVisibility{}
+			err := query.AndWhere(dbx.HashExp{"list": id}).All(&users)
 			if err != nil {
-
-				return c.JSON(http.StatusForbidden, "{\"error\":\"forbidden, only connected user has the right to use this api\"}")
+				print("unable to get users in the list")
+				print(err)
+				return c.JSON(http.StatusInternalServerError, "{\"error\":\"Unable to get users in the list\"}")
 			}
+			for _, user := range users {
 
-			returned := db.UserLists{
-				Count: len(result),
-			}
-
-			for _, v := range result {
-				ent := db.UserListEntry{
-					Id:      v.Id,
-					ListId:  v.List,
-					UserId:  v.UserOwnership,
-					Owner:   v.Owner,
-					Created: v.Created.String(),
+				username, err := app.Dao().FindRecordById("users", user.UserOwnership)
+				if err != nil {
+					print("unable to found user: ", user.UserOwnership)
+					print(err)
+					continue
 				}
-				returned.Lists = append(returned.Lists, ent)
+
+				returned_user := db.GetUserInList{
+					Name:  username.Username(),
+					Id:    user.Id,
+					Owner: user.Owner,
+				}
+				returned.Users = append(returned.Users, returned_user)
+			}
+
+			/* shares in list */
+
+			share_query := app.Dao().ModelQuery(&db.ListShare{})
+			shares := []*db.ListShare{}
+			err = share_query.AndWhere(dbx.HashExp{"list": id}).All(&shares)
+
+			if err != nil { 
+
+				print("unable to get shares in the list", err)
+				return c.JSON(http.StatusInternalServerError, "{\"error\":\"Unable to get shares in the list\"}")
+			}
+
+			for _, share := range shares {
+				returned_share := db.GetListShare{
+					Identifier:     share.Identifier,
+					SharedBy:       share.SharedBy,
+					ExpirationDate: share.ExpirationDate,
+				}
+
+				returned.Shares = append(returned.Shares, returned_share)
 			}
 
 			return c.JSON(http.StatusOK, returned)
-
 		},
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
@@ -86,7 +125,10 @@ func AddListInfoRoutes(e *core.ServeEvent, app *pocketbase.PocketBase) {
 			l, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 
 			if l == nil {
-				return c.JSON(http.StatusForbidden, "{\"error\":\"forbidden, only connected user has the right to use this api\"}")
+				return c.JSON(
+					http.StatusForbidden,
+					"{\"error\":\"forbidden, only connected user has the right to use this api\"}",
+				)
 			}
 			if !c.QueryParams().Has("id") {
 				return c.JSON(http.StatusForbidden, "{\"error\":\"Please enter a valid 'id'\"}")
@@ -101,14 +143,14 @@ func AddListInfoRoutes(e *core.ServeEvent, app *pocketbase.PocketBase) {
 			result := &db.ShopList{}
 			err := app.Dao().ModelQuery(&db.ShopList{}).AndWhere(dbx.HashExp{"id": id}).One(result)
 			//	err := query.AndWhere(dbx.HashExp{"userOwnership": userId}).All(&result)
-
 			if err != nil {
-
-				return c.JSON(http.StatusForbidden, "{\"error\":\"forbidden, only connected user has the right to use this api\"}")
+				return c.JSON(
+					http.StatusForbidden,
+					"{\"error\":\"forbidden, only connected user has the right to use this api\"}",
+				)
 			}
 
 			return c.JSON(http.StatusOK, result)
-
 		},
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),

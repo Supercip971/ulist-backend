@@ -1,21 +1,23 @@
 /*
- Copyright (C) 2023 cyp
+Copyright (C) 2023 cyp
 
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 package db
+
+import "github.com/pocketbase/pocketbase/tools/types"
 
 type ShoppingListEntry struct {
 	Id             string `db:"id" json:"id"`
@@ -66,3 +68,23 @@ type PostShoppingList struct {
 	Entries []PutShoppingList    `db:"pushes" json:"pushes"`
 	Update  []UpdateShoppingList `db:"updates" json:"updates"`
 }
+
+type GetListShare struct {
+	SharedBy       string         `db:"sharedBy" json:"sharedBy"`
+	ExpirationDate types.DateTime `db:"expirationDate" json:"expirationDate"`
+	Identifier     string         `db:"identificator" json:"identificator"`
+}
+
+type GetUserInList struct {
+	Name string `json:"name"`
+	Id string `json:"id"`
+	Owner bool `json:"owner"`
+}
+
+type ShoppingListProperties struct {
+	Name 		string `json:"name"`
+
+	Users 		[]GetUserInList `json:"users"`
+	Shares 		[]GetListShare `json:"shares"`
+}
+
