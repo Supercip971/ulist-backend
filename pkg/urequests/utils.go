@@ -126,6 +126,7 @@ func DbListUpdate(app *pocketbase.PocketBase, req db.PostShoppingList, userId st
 			List:    req.ListId,
 			AddedBy: userId,
 			Checked: entry.Checked,
+			Tags:   "",
 		}
 		res.MarkAsNew()
 		if err := app.Dao().Save(res); err != nil {
@@ -148,6 +149,11 @@ func DbListUpdate(app *pocketbase.PocketBase, req db.PostShoppingList, userId st
 			original.Name = entry.Name
 		}
 		original.Checked = entry.Checked
+
+		if entry.Tags != "NONE" {
+
+			original.Tags = entry.Tags
+		}
 
 		original.MarkAsNotNew()
 		if err := app.Dao().Save(original); err != nil {

@@ -59,6 +59,7 @@ type DbShopListEntries struct {
 	AddedBy        string `db:"addedBy" json:"addedBy"`
 	Checked        bool   `db:"checked" json:"checked"`
 	CustomRelation string `db:"customRelation" json:"customRelation"`
+	Tags		   string `db:"tags" json:"tags"`
 }
 
 var _ models.Model = (*DbShopListEntries)(nil)

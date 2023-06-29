@@ -19,6 +19,7 @@ package db
 
 import "github.com/pocketbase/pocketbase/tools/types"
 
+
 type ShoppingListEntry struct {
 	Id             string `db:"id" json:"id"`
 	Created        string `db:"created" json:"created"`
@@ -26,6 +27,7 @@ type ShoppingListEntry struct {
 	List           string `db:"list" json:"list"`
 	AddedBy        string `db:"addedBy" json:"addedBy"`
 	Checked        bool   `db:"checked" json:"checked"`
+	Tags 		   string `db:"tags" json:"tags"`
 	CustomRelation string `db:"customRelation" json:"customRelation"`
 }
 
@@ -60,6 +62,7 @@ type UpdateShoppingList struct {
 	EntryId string `db:"id" json:"id"`     // entry id, using 0 for new entry
 	Name    string `db:"name" json:"name"` //
 	Checked bool   `db:"checked" json:"checked"`
+	Tags 	string `db:"tags" json:"tags"`
 }
 
 type PostShoppingList struct {

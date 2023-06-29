@@ -75,6 +75,7 @@ func AddListEntriesQueriesRoutes(e *core.ServeEvent, app *pocketbase.PocketBase)
 					CustomRelation: v.CustomRelation,
 					Id:             v.Id,
 					List:           v.List,
+					Tags: 			v.Tags,
 				}
 				returned.Lists = append(returned.Lists, ent)
 			}
