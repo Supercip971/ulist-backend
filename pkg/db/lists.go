@@ -42,6 +42,7 @@ type ShopList struct {
 
 	Name              string `db:"name" json:"name"`
 	ReadonlyByDefault bool   `db:"readonly_by_default" json:"readonly_by_default"`
+	Tags 			  string `db:"tags" json:"tags"`
 }
 
 var _ models.Model = (*ShopList)(nil)
