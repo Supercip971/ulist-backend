@@ -68,9 +68,16 @@ func AddListEntriesQueriesRoutes(e *core.ServeEvent, app *pocketbase.PocketBase)
 			}
 
 			for _, v := range result {
+				username, err := app.Dao().FindRecordById("users", v.AddedBy)
+				if err != nil {
+					print("unable to found user: ", v.AddedBy)
+					print(err)
+					continue
+				}
+				
 				ent := db.ShoppingListEntry{
 					Name:           v.Name,
-					AddedBy:        v.AddedBy,
+					AddedBy:        username.Username(),
 					Checked:        v.Checked,
 					CustomRelation: v.CustomRelation,
 					Id:             v.Id,
