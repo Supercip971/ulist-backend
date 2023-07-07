@@ -56,6 +56,7 @@ type UserLists struct {
 type PutShoppingList struct {
 	Name    string `db:"name" json:"name"`
 	Checked bool   `db:"checked" json:"checked"`
+	Tags    string `db:"tags" json:"tags"`
 }
 
 type UpdateShoppingList struct {
