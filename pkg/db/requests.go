@@ -36,6 +36,7 @@ type ShoppingList struct {
 	Count int                 `json:"count"`
 }
 
+
 type UserListEntry struct {
 	Id      string `db:"id" json:"id"`
 	Created string `db:"created" json:"created"`
@@ -64,6 +65,7 @@ type UpdateShoppingList struct {
 	Name    string `db:"name" json:"name"` //
 	Checked bool   `db:"checked" json:"checked"`
 	Tags 	string `db:"tags" json:"tags"`
+	Delete  bool   `db:"delete" json:"delete"`
 }
 
 type PostShoppingList struct {
@@ -92,3 +94,4 @@ type ShoppingListProperties struct {
 	Shares 		[]GetListShare `json:"shares"`
 }
 
+}

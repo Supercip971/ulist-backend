@@ -145,13 +145,20 @@ func DbListUpdate(app *pocketbase.PocketBase, req db.PostShoppingList, userId st
 			return err
 		}
 
+
+		if(entry.Delete) {
+			if err := app.Dao().Delete(original); err != nil {
+				return err
+			}
+			continue
+		}
+
 		if entry.Name != "" {
 			original.Name = entry.Name
 		}
 		original.Checked = entry.Checked
 
 		if entry.Tags != "NONE" {
-
 			original.Tags = entry.Tags
 		}
 
