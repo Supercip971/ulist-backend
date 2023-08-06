@@ -1,5 +1,5 @@
 
-# ULIST backend 
+# Cute LIST backend 
 
 A current list app I'm trying to build.
 This part of the app is the backend which is built with Go and pocketbase.
